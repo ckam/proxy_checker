@@ -1,7 +1,7 @@
 # Simple bash proxy checker #
 ***
 
-## Proxy format: ##
+## Proxy format (in text file): ##
 #### with authorization: ####
 
     ip:port:username:password
