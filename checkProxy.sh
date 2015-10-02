@@ -18,12 +18,12 @@ DEF='\e[0m'
 # END OF COLORS #
 
 # GET OPTIONS #
-while getopts ":ht:f:g:b:m:" OPTION
+while getopts ":ht:f:g:b:m:u:" OPTION
 do
   case $OPTION in
     h)
-      echo "Usage: $0 [-h - help] [-t <type> - type of proxy (http - default, socks4, socks5, socks5-hostname (dns throught socks5))] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-m <sec> - max connect time in second, default 10 sec]"
-      echo "proxy format: ip:port:username:password"
+      echo "Usage: $0 [-h - help] [-t <type> - type of proxy (http - default, socks4, socks5, socks5-hostname (dns throught socks5))] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec]"
+      echo "proxy format: ip:port:username:password or ip:port"
       exit 0;;
     t)
       PROXY_TYPE="$OPTARG";;
@@ -33,6 +33,8 @@ do
       GOOD_FILE="$OPTARG";;
     b)
       FAIL_FILE="$OPTARG";;
+    u)
+      CHECK_URL="$OPTARG";;
     m)
       MAX_CONNECT="$OPTARG";;
   esac
