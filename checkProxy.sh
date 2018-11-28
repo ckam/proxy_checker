@@ -10,11 +10,11 @@ GOOD=0
 FAIL=0
 
 # COLORS #
-RED='\e[1;31m'
-BLUE='\e[1;34m'
-TUR='\e[1;36m'
-YEL='\e[1;33m'
-DEF='\e[0m'
+RED='\033[1;31m'
+BLUE='\033[1;34m'
+TUR='\033[1;36m'
+YEL='\033[1;33m'
+DEF='\033[0m'
 # END OF COLORS #
 
 # GET OPTIONS #
