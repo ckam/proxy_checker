@@ -10,9 +10,11 @@ FAIL=0
 
 # COLORS #
 RED='\033[1;31m'
-BLUE='\033[1;34m'
-TUR='\033[1;36m'
+GRN='\033[1;32m'
 YEL='\033[1;33m'
+BLU='\033[1;34m'
+TUR='\033[1;36m'
+WHT='\033[1;37m'
 DEF='\033[0m'
 # END OF COLORS #
 
@@ -90,6 +92,7 @@ do
 	fi
 	# END OF PROXY TYPE #
   
+  echo -ne "$IP\t$PORT\t$USER\t$PASS\t[$PROXY_TYPE]\t"
   
   if [[ $USER && $PASS ]]
   then
@@ -102,11 +105,14 @@ do
   
   if [[ $CHECK -eq 0 ]]
   then
-    echo -e "$IP\t$PORT\t[$PROXY_TYPE]\t"$TUR"good"$DEF
+    echo -ne $GRN"good"$DEF
     GOOD=$(($GOOD+1))
     GOOD_ARR+=($PROXY)
+    echo -ne " "$WHT
+    ping -c 4 $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2
+    echo -ne $DEF
   else  
-    echo -e "$IP\t$PORT\t[$PROXY_TYPE]\t"$RED"dead"$DEF
+    echo -e $RED"dead"$DEF
     FAIL=$(($FAIL+1))
     FAIL_ARR+=($PROXY)
   fi
@@ -118,7 +124,7 @@ if [[ $GOOD_FILE ]]
 then
   echo -n > $GOOD_FILE
   echo ${GOOD_ARR[@]} | tr " " "\n" >> $GOOD_FILE
-  echo -e $TUR"Good proxies save in $GOOD_FILE"$DEF
+  echo -e $GRN"Good proxies save in $GOOD_FILE"$DEF
 fi
 # ENF OF SAVE GOOD PROXY TO FILE #
 
@@ -131,6 +137,7 @@ then
 fi
 # END OF SAVE FAIL PROXY TO FILE #
 
-echo -e $BLUE"Good proxy: $GOOD$DEF,$RED bad proxy: $FAIL$DEF,$TUR all: $(($GOOD+$FAIL))"$DEF
+echo -e $TUR"all: $(($GOOD+$FAIL))"$DEF", "$GRN"Good proxy: $GOOD"$DEF", "$RED"bad proxy: $FAIL"$DEF
 
 exit 0
+
