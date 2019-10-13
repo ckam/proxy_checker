@@ -5,7 +5,7 @@
 #### with authorization: ####
 
     ip:port:username:password:type_proxy  
-    
+
 #### without authorization: ####
 
     ip:port
@@ -21,6 +21,6 @@
 
 ***
 ### Example: ###
-    ./checkProxy.sh -f proxy -m 5 -g good
+    $ ./checkProxy.sh -f proxy_sample.txt -m 5 -g good
 
 ***
