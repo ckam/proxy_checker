@@ -3,6 +3,10 @@
 ![Simple bash proxy checker](/img/screenshot.png "Simple bash proxy checker")
 ***
 
+## Requirement ##
+
+	Require **jq** for json geolocation services  
+
 ## Proxy format (in text file): ##
 #### with authorization: ####
 

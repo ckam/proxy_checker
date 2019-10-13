@@ -2,6 +2,7 @@
 
 PROXYS='proxy.txt'
 CHECK_URL='https://api.ipify.org?format=json'
+GEOIP_URL='https://geoip-db.com/json/'
 MAX_CONNECT=10
 PING_COUNT=4
 GOOD_ARR=()
@@ -122,11 +123,10 @@ do
     if [[ $CHECK -eq 0 ]]
     then
       echo -ne $GRN"good"$DEF
+      echo -ne $WHT" "$(ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2)
+      echo -e "\t"$(curl -s $GEOIP_URL$IP | jq -r .country_name)$DEF
       GOOD=$(($GOOD+1))
       GOOD_ARR+=($PROXY)
-      echo -ne " "$WHT
-      ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2
-      echo -ne $DEF
     else  
       echo -e $RED"dead"$DEF
       FAIL=$(($FAIL+1))
