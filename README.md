@@ -14,12 +14,12 @@
 
 ## Arguments: ##
 * -h - help  
-* -f <file> - file with proxy, default proxy.txt  
-* -g <file> - out file for good proxies  
-* -b <file> - out file for bad proxies  
-* -u <url> - url for check, default "https://api.ipify.org?format=json"  
-* -m <sec> - max connect time in seconds, default 10 sec  
-* -c <count> - max ping count for AVG time, default 4 count  
+* -f **file** - file with proxy, default proxy.txt  
+* -g **file** - out file for good proxies  
+* -b **file** - out file for bad proxies  
+* -u **url** - url for check, default "https://api.ipify.org?format=json"  
+* -m **sec** - max connect time in seconds, default 10 sec  
+* -c **count** - max ping count for AVG time, default 4 count  
 
 ***
 ### Example: ###
