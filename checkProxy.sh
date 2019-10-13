@@ -71,8 +71,8 @@ fi
 
 # CHECK PROXY #
 for PROXY in $(<$PROXYS)
-do
-  if [[  ${PROXY:0:1} != "#" ]]
+do  
+  if [[ "${PROXY:0:1}" != "#" ]]
   then
     unset USER PASS
     IP=$(echo $PROXY | awk -F: '{print $1}')
@@ -124,7 +124,7 @@ do
     then
       echo -ne $GRN"good"$DEF
       echo -ne $WHT" "$(ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2)
-      echo -e "\t"$(curl -s $GEOIP_URL$IP | jq -r .country_name)$DEF
+      echo -e "\t"$(curl -s $GEOIP_URL$IP | awk -F, '{print $2}' | awk -F: '{print $2}' | cut -d '"' -f 2)$DEF
       GOOD=$(($GOOD+1))
       GOOD_ARR+=($PROXY)
     else  
