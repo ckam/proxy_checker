@@ -4,14 +4,13 @@
 ## Proxy format (in text file): ##
 #### with authorization: ####
 
-    ip:port:username:password
+    ip:port:username:password:type_proxy
 #### without authorization: ####
 
     ip:port
 
 ## Arguments: ##
 * -h - help
-* -t <type> - type of proxy (http - default, socks4, socks5, socks5-hostname (dns throught socks5))
 * -f <file> - file with proxy, default proxy.txt
 * -g <file> - out file for good proxies
 * -b <file> - out file for bad proxies
@@ -20,6 +19,6 @@
 
 ***
 ### Example: ###
-    ./checkProxy.sh -f proxy -t socks5 -m 5 -g good
+    ./checkProxy.sh -f proxy -m 5 -g good
 
 ***

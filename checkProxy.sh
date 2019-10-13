@@ -1,7 +1,6 @@
 #!/bin/bash
 
 PROXYS='proxy.txt'
-PROXY_TYPE='http'
 CHECK_URL='https://api.ipify.org?format=json'
 MAX_CONNECT=10
 GOOD_ARR=()
@@ -22,11 +21,9 @@ while getopts ":ht:f:g:b:m:u:" OPTION
 do
   case $OPTION in
     h)
-      echo "Usage: $0 [-h - help] [-t <type> - type of proxy (http - default, socks4, socks5, socks5-hostname (dns throught socks5))] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec]"
+      echo "Usage: $0 [-h - help] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec]"
       echo "proxy format: ip:port:username:password or ip:port"
       exit 0;;
-    t)
-      PROXY_TYPE="$OPTARG";;
     f)
       PROXYS="$OPTARG";;
     g)
@@ -40,25 +37,6 @@ do
   esac
 done
 # END OF GET OPTIONS #
-
-# PROXY TYPE #
-if [[ $PROXY_TYPE == "http" ]]
-then
-  PROXY_TYPE_COMMAND="--proxy"
-elif [[  $PROXY_TYPE == "socks4" ]]
-then
-  PROXY_TYPE_COMMAND="--socks4"
-elif [[ $PROXY_TYPE == "socks5" ]]
-then
-  PROXY_TYPE_COMMAND="--socks5"
-elif [[ $PROXY_TYPE == "socks5-hostname" ]]
-then
-  PROXY_TYPE_COMMAND="--socks5-hostname"
-else
-  echo -e $RED"Unknown type proxy. Exit"$DEF
-  exit 1
-fi
-# END OF PROXY TYPE #
 
 # CHECK CURL IF EXIST #
 if ! which curl > /dev/null
@@ -88,11 +66,30 @@ fi
 # CHECK PROXY #
 for PROXY in $(<$PROXYS)
 do
-  unset USER PASS
+  unset USER PASS PROXY_TYPE
   IP=$(echo $PROXY | awk -F: '{print $1}')
   PORT=$(echo $PROXY | awk -F: '{print $2}')
   USER=$(echo $PROXY | awk -F: '{print $3}')
   PASS=$(echo $PROXY | awk -F: '{print $4}')
+  PROXY_TYPE=$(echo $PROXY | awk -F: '{print $5}')
+  
+  
+  # PROXY TYPE #
+	if [[  $PROXY_TYPE == "socks4" ]]
+	then
+		PROXY_TYPE_COMMAND="--socks4"
+	elif [[ $PROXY_TYPE == "socks5" ]]
+	then
+		PROXY_TYPE_COMMAND="--socks5"
+	elif [[ $PROXY_TYPE == "socks5-hostname" ]]
+	then
+		PROXY_TYPE_COMMAND="--socks5-hostname"
+	else
+		PROXY_TYPE="http"
+		PROXY_TYPE_COMMAND="--proxy"
+	fi
+	# END OF PROXY TYPE #
+  
   
   if [[ $USER && $PASS ]]
   then
@@ -105,11 +102,11 @@ do
   
   if [[ $CHECK -eq 0 ]]
   then
-    echo -e $TUR"$PROXY is good"$DEF
+    echo -e "$IP\t$PORT\t[$PROXY_TYPE]\t"$TUR"good"$DEF
     GOOD=$(($GOOD+1))
     GOOD_ARR+=($PROXY)
   else  
-    echo -e $RED"$PROXY is dead"$DEF
+    echo -e "$IP\t$PORT\t[$PROXY_TYPE]\t"$RED"dead"$DEF
     FAIL=$(($FAIL+1))
     FAIL_ARR+=($PROXY)
   fi
