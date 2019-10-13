@@ -3,6 +3,7 @@
 PROXYS='proxy.txt'
 CHECK_URL='https://api.ipify.org?format=json'
 MAX_CONNECT=10
+PING_COUNT=4
 GOOD_ARR=()
 FAIL_ARR=()
 GOOD=0
@@ -19,11 +20,11 @@ DEF='\033[0m'
 # END OF COLORS #
 
 # GET OPTIONS #
-while getopts ":ht:f:g:b:m:u:" OPTION
+while getopts ":h:f:g:b:m:u:p:" OPTION
 do
   case $OPTION in
     h)
-      echo "Usage: $0 [-h - help] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec]"
+      echo "Usage: $0 [-h - help] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec] [-p <count> - max ping count for AVG time, default 4 count]"
       echo "proxy format: ip:port:username:password or ip:port"
       exit 0;;
     f)
@@ -36,6 +37,8 @@ do
       CHECK_URL="$OPTARG";;
     m)
       MAX_CONNECT="$OPTARG";;
+    p)
+      PING_COUNT="$OPTARG";;
   esac
 done
 # END OF GET OPTIONS #
@@ -68,14 +71,13 @@ fi
 # CHECK PROXY #
 for PROXY in $(<$PROXYS)
 do
-  unset USER PASS PROXY_TYPE
+  unset USER PASS
   IP=$(echo $PROXY | awk -F: '{print $1}')
   PORT=$(echo $PROXY | awk -F: '{print $2}')
   USER=$(echo $PROXY | awk -F: '{print $3}')
   PASS=$(echo $PROXY | awk -F: '{print $4}')
   PROXY_TYPE=$(echo $PROXY | awk -F: '{print $5}')
-  
-  
+
   # PROXY TYPE #
 	if [[  $PROXY_TYPE == "socks4" ]]
 	then
@@ -87,12 +89,12 @@ do
 	then
 		PROXY_TYPE_COMMAND="--socks5-hostname"
 	else
-		PROXY_TYPE="http"
+		PROXY_TYPE=" http "
 		PROXY_TYPE_COMMAND="--proxy"
 	fi
 	# END OF PROXY TYPE #
   
-  echo -ne "$IP\t$PORT\t$USER\t$PASS\t[$PROXY_TYPE]\t"
+  echo -ne "$IP\t$PORT\t$USER\t$PASS\t[$PROXY_TYPE] "
   
   if [[ $USER && $PASS ]]
   then
@@ -109,7 +111,7 @@ do
     GOOD=$(($GOOD+1))
     GOOD_ARR+=($PROXY)
     echo -ne " "$WHT
-    ping -c 4 $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2
+    ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2
     echo -ne $DEF
   else  
     echo -e $RED"dead"$DEF
