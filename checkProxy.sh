@@ -1,8 +1,7 @@
 #!/bin/bash
 
 PROXYS='proxy.txt'
-CHECK_URL='https://api.ipify.org?format=json'
-GEOIP_URL='https://geoip-db.com/json/'
+CHECK_GEOIP_URL='https://geoip-db.com/json/'
 MAX_CONNECT=10
 PING_COUNT=4
 GOOD_ARR=()
@@ -113,18 +112,17 @@ do
     
     if [[ $USER && $PASS ]]
     then
-      curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT -U $USER:$PASS $CHECK_URL > /dev/null
+      GEOIP=$(curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT -U $USER:$PASS $CHECK_GEOIP_URL$IP)
       CHECK=$?
     else
-      curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT $CHECK_URL > /dev/null
+      GEOIP=$(curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT $CHECK_GEOIP_URL$IP)
       CHECK=$?
     fi
     
     if [[ $CHECK -eq 0 ]]
     then
-      echo -ne $GRN"good"$DEF
-      echo -ne $WHT" "$(ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2)
-      echo -e "\t"$(curl -s $GEOIP_URL$IP | awk -F, '{print $2}' | awk -F: '{print $2}' | cut -d '"' -f 2)$DEF
+      echo -ne $GRN"good"$DEF" "$(echo $GEOIP | awk -F, '{print $2}' | awk -F: '{print $2}' | cut -d '"' -f 2)" "
+      echo -e $WHT$(ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2)$DEF
       GOOD=$(($GOOD+1))
       GOOD_ARR+=($PROXY)
     else  
