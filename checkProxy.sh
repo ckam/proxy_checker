@@ -71,64 +71,67 @@ fi
 # CHECK PROXY #
 for PROXY in $(<$PROXYS)
 do
-  unset USER PASS
-  IP=$(echo $PROXY | awk -F: '{print $1}')
-  PORT=$(echo $PROXY | awk -F: '{print $2}')
-  USER=$(echo $PROXY | awk -F: '{print $3}')
-  PASS=$(echo $PROXY | awk -F: '{print $4}')
-  PROXY_TYPE=$(echo $PROXY | awk -F: '{print $5}')
+  if [[  ${PROXY:0:1} != "#" ]]
+  then
+    unset USER PASS
+    IP=$(echo $PROXY | awk -F: '{print $1}')
+    PORT=$(echo $PROXY | awk -F: '{print $2}')
+    USER=$(echo $PROXY | awk -F: '{print $3}')
+    PASS=$(echo $PROXY | awk -F: '{print $4}')
+    PROXY_TYPE=$(echo $PROXY | awk -F: '{print $5}')
 
-  # PROXY TYPE #
-	if [[  $PROXY_TYPE == "socks4" ]]
-	then
-		PROXY_TYPE="socks4"
-		PROXY_TYPE_COMMAND="--socks4 "
-	
-	elif [[ $PROXY_TYPE == "socks5" ]]
-	then
-		PROXY_TYPE="socks5"
-		PROXY_TYPE_COMMAND="--socks5 "
-	
-	elif [[ $PROXY_TYPE == "socks5-hostname" ]]
-	then
-		PROXY_TYPE="s5host"
-		PROXY_TYPE_COMMAND="--socks5-hostname "
-	
-	elif [[ $PROXY_TYPE == "https" ]]
-	then
-		PROXY_TYPE="https "
-		PROXY_TYPE_COMMAND="--proxy https://"
-	
-	else
-		PROXY_TYPE=" http "
-		PROXY_TYPE_COMMAND="--proxy http://"
-		
-	fi
-	# END OF PROXY TYPE #
-  
-  echo -ne "$IP\t$PORT\t$USER\t$PASS\t[$PROXY_TYPE] "
-  
-  if [[ $USER && $PASS ]]
-  then
-    curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT -U $USER:$PASS $CHECK_URL > /dev/null
-    CHECK=$?
-  else
-    curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT $CHECK_URL > /dev/null
-    CHECK=$?
-  fi
-  
-  if [[ $CHECK -eq 0 ]]
-  then
-    echo -ne $GRN"good"$DEF
-    GOOD=$(($GOOD+1))
-    GOOD_ARR+=($PROXY)
-    echo -ne " "$WHT
-    ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2
-    echo -ne $DEF
-  else  
-    echo -e $RED"dead"$DEF
-    FAIL=$(($FAIL+1))
-    FAIL_ARR+=($PROXY)
+    # PROXY TYPE #
+  	if [[  $PROXY_TYPE == "socks4" ]]
+  	then
+  		PROXY_TYPE="socks4"
+  		PROXY_TYPE_COMMAND="--socks4 "
+  	
+  	elif [[ $PROXY_TYPE == "socks5" ]]
+  	then
+  		PROXY_TYPE="socks5"
+  		PROXY_TYPE_COMMAND="--socks5 "
+  	
+  	elif [[ $PROXY_TYPE == "socks5-hostname" ]]
+  	then
+  		PROXY_TYPE="s5host"
+  		PROXY_TYPE_COMMAND="--socks5-hostname "
+  	
+  	elif [[ $PROXY_TYPE == "https" ]]
+  	then
+  		PROXY_TYPE="https "
+  		PROXY_TYPE_COMMAND="--proxy https://"
+  	
+  	else
+  		PROXY_TYPE=" http "
+  		PROXY_TYPE_COMMAND="--proxy http://"
+  		
+  	fi
+  	# END OF PROXY TYPE #
+    
+    echo -ne "$IP\t$PORT\t$USER\t$PASS\t[$PROXY_TYPE] "
+    
+    if [[ $USER && $PASS ]]
+    then
+      curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT -U $USER:$PASS $CHECK_URL > /dev/null
+      CHECK=$?
+    else
+      curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT $CHECK_URL > /dev/null
+      CHECK=$?
+    fi
+    
+    if [[ $CHECK -eq 0 ]]
+    then
+      echo -ne $GRN"good"$DEF
+      GOOD=$(($GOOD+1))
+      GOOD_ARR+=($PROXY)
+      echo -ne " "$WHT
+      ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2
+      echo -ne $DEF
+    else  
+      echo -e $RED"dead"$DEF
+      FAIL=$(($FAIL+1))
+      FAIL_ARR+=($PROXY)
+    fi
   fi
 done
 # END OF CHECK PROXY #
