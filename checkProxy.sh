@@ -81,16 +81,28 @@ do
   # PROXY TYPE #
 	if [[  $PROXY_TYPE == "socks4" ]]
 	then
-		PROXY_TYPE_COMMAND="--socks4"
+		PROXY_TYPE="socks4"
+		PROXY_TYPE_COMMAND="--socks4 "
+	
 	elif [[ $PROXY_TYPE == "socks5" ]]
 	then
-		PROXY_TYPE_COMMAND="--socks5"
+		PROXY_TYPE="socks5"
+		PROXY_TYPE_COMMAND="--socks5 "
+	
 	elif [[ $PROXY_TYPE == "socks5-hostname" ]]
 	then
-		PROXY_TYPE_COMMAND="--socks5-hostname"
+		PROXY_TYPE="s5host"
+		PROXY_TYPE_COMMAND="--socks5-hostname "
+	
+	elif [[ $PROXY_TYPE == "https" ]]
+	then
+		PROXY_TYPE="https "
+		PROXY_TYPE_COMMAND="--proxy https://"
+	
 	else
 		PROXY_TYPE=" http "
-		PROXY_TYPE_COMMAND="--proxy"
+		PROXY_TYPE_COMMAND="--proxy http://"
+		
 	fi
 	# END OF PROXY TYPE #
   
@@ -98,10 +110,10 @@ do
   
   if [[ $USER && $PASS ]]
   then
-    curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND $IP:$PORT -U $USER:$PASS $CHECK_URL > /dev/null
+    curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT -U $USER:$PASS $CHECK_URL > /dev/null
     CHECK=$?
   else
-    curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND $IP:$PORT $CHECK_URL > /dev/null
+    curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT $CHECK_URL > /dev/null
     CHECK=$?
   fi
   
