@@ -20,11 +20,11 @@ DEF='\033[0m'
 # END OF COLORS #
 
 # GET OPTIONS #
-while getopts ":h:f:g:b:m:u:p:" OPTION
+while getopts ":h:f:g:b:m:u:c:" OPTION
 do
   case $OPTION in
     h)
-      echo "Usage: $0 [-h - help] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec] [-p <count> - max ping count for AVG time, default 4 count]"
+      echo "Usage: $0 [-h - help] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec] [-c <count> - max ping count for AVG time, default 4 count]"
       echo "proxy format: ip:port:username:password or ip:port"
       exit 0;;
     f)
@@ -37,7 +37,7 @@ do
       CHECK_URL="$OPTARG";;
     m)
       MAX_CONNECT="$OPTARG";;
-    p)
+    c)
       PING_COUNT="$OPTARG";;
   esac
 done

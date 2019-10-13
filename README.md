@@ -19,7 +19,7 @@
 * -b <file> - out file for bad proxies  
 * -u <url> - url for check, default "https://api.ipify.org?format=json"  
 * -m <sec> - max connect time in seconds, default 10 sec  
-* -p <count> - max ping count for AVG time, default 4 count  
+* -c <count> - max ping count for AVG time, default 4 count  
 
 ***
 ### Example: ###
