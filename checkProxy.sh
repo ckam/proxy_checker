@@ -1,9 +1,9 @@
 #!/bin/bash
 
 PROXYS='proxy.txt'
-PROXY_TYPE='http'
-CHECK_URL='https://api.ipify.org?format=json'
+CHECK_GEOIP_URL='https://geoip-db.com/json/'
 MAX_CONNECT=10
+PING_COUNT=4
 GOOD_ARR=()
 FAIL_ARR=()
 GOOD=0
@@ -11,22 +11,22 @@ FAIL=0
 
 # COLORS #
 RED='\033[1;31m'
-BLUE='\033[1;34m'
-TUR='\033[1;36m'
+GRN='\033[1;32m'
 YEL='\033[1;33m'
+BLU='\033[1;34m'
+TUR='\033[1;36m'
+WHT='\033[1;37m'
 DEF='\033[0m'
 # END OF COLORS #
 
 # GET OPTIONS #
-while getopts ":ht:f:g:b:m:u:" OPTION
+while getopts ":h:f:g:b:m:u:c:" OPTION
 do
   case $OPTION in
     h)
-      echo "Usage: $0 [-h - help] [-t <type> - type of proxy (http - default, socks4, socks5, socks5-hostname (dns throught socks5))] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec]"
+      echo "Usage: $0 [-h - help] [-f <file> - file with proxy, default proxy.txt] [-g <file> - out file for good proxies] [-b <file> - out file for bad proxies] [-u <url> - url for check proxy, default $CHECK_URL] [-m <sec> - max connect time in second, default 10 sec] [-c <count> - max ping count for AVG time, default 4 count]"
       echo "proxy format: ip:port:username:password or ip:port"
       exit 0;;
-    t)
-      PROXY_TYPE="$OPTARG";;
     f)
       PROXYS="$OPTARG";;
     g)
@@ -37,28 +37,11 @@ do
       CHECK_URL="$OPTARG";;
     m)
       MAX_CONNECT="$OPTARG";;
+    c)
+      PING_COUNT="$OPTARG";;
   esac
 done
 # END OF GET OPTIONS #
-
-# PROXY TYPE #
-if [[ $PROXY_TYPE == "http" ]]
-then
-  PROXY_TYPE_COMMAND="--proxy"
-elif [[  $PROXY_TYPE == "socks4" ]]
-then
-  PROXY_TYPE_COMMAND="--socks4"
-elif [[ $PROXY_TYPE == "socks5" ]]
-then
-  PROXY_TYPE_COMMAND="--socks5"
-elif [[ $PROXY_TYPE == "socks5-hostname" ]]
-then
-  PROXY_TYPE_COMMAND="--socks5-hostname"
-else
-  echo -e $RED"Unknown type proxy. Exit"$DEF
-  exit 1
-fi
-# END OF PROXY TYPE #
 
 # CHECK CURL IF EXIST #
 if ! which curl > /dev/null
@@ -87,31 +70,66 @@ fi
 
 # CHECK PROXY #
 for PROXY in $(<$PROXYS)
-do
-  unset USER PASS
-  IP=$(echo $PROXY | awk -F: '{print $1}')
-  PORT=$(echo $PROXY | awk -F: '{print $2}')
-  USER=$(echo $PROXY | awk -F: '{print $3}')
-  PASS=$(echo $PROXY | awk -F: '{print $4}')
-  
-  if [[ $USER && $PASS ]]
+do  
+  if [[ "${PROXY:0:1}" != "#" ]]
   then
-    curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND $IP:$PORT -U $USER:$PASS $CHECK_URL > /dev/null
-    CHECK=$?
-  else
-    curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND $IP:$PORT $CHECK_URL > /dev/null
-    CHECK=$?
-  fi
-  
-  if [[ $CHECK -eq 0 ]]
-  then
-    echo -e $TUR"$PROXY is good"$DEF
-    GOOD=$(($GOOD+1))
-    GOOD_ARR+=($PROXY)
-  else  
-    echo -e $RED"$PROXY is dead"$DEF
-    FAIL=$(($FAIL+1))
-    FAIL_ARR+=($PROXY)
+    unset USER PASS
+    IP=$(echo $PROXY | awk -F: '{print $1}')
+    PORT=$(echo $PROXY | awk -F: '{print $2}')
+    USER=$(echo $PROXY | awk -F: '{print $3}')
+    PASS=$(echo $PROXY | awk -F: '{print $4}')
+    PROXY_TYPE=$(echo $PROXY | awk -F: '{print $5}')
+
+    # PROXY TYPE #
+  	if [[  $PROXY_TYPE == "socks4" ]]
+  	then
+  		PROXY_TYPE="socks4"
+  		PROXY_TYPE_COMMAND="--socks4 "
+  	
+  	elif [[ $PROXY_TYPE == "socks5" ]]
+  	then
+  		PROXY_TYPE="socks5"
+  		PROXY_TYPE_COMMAND="--socks5 "
+  	
+  	elif [[ $PROXY_TYPE == "socks5-hostname" ]]
+  	then
+  		PROXY_TYPE="s5host"
+  		PROXY_TYPE_COMMAND="--socks5-hostname "
+  	
+  	elif [[ $PROXY_TYPE == "https" ]]
+  	then
+  		PROXY_TYPE="https "
+  		PROXY_TYPE_COMMAND="--proxy https://"
+  	
+  	else
+  		PROXY_TYPE=" http "
+  		PROXY_TYPE_COMMAND="--proxy http://"
+  		
+  	fi
+  	# END OF PROXY TYPE #
+    
+    echo -ne "$IP\t$PORT\t$USER\t$PASS\t[$PROXY_TYPE] "
+    
+    if [[ $USER && $PASS ]]
+    then
+      GEOIP=$(curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT -U $USER:$PASS $CHECK_GEOIP_URL$IP)
+      CHECK=$?
+    else
+      GEOIP=$(curl -s -m $MAX_CONNECT $PROXY_TYPE_COMMAND$IP:$PORT $CHECK_GEOIP_URL$IP)
+      CHECK=$?
+    fi
+    
+    if [[ $CHECK -eq 0 ]]
+    then
+      echo -ne $GRN"good"$DEF" "$(echo $GEOIP | awk -F, '{print $2}' | awk -F: '{print $2}' | cut -d '"' -f 2)" "
+      echo -e $WHT$(ping -c $PING_COUNT $IP | tail -1| awk '{print $4}' | cut -d '/' -f 2)$DEF
+      GOOD=$(($GOOD+1))
+      GOOD_ARR+=($PROXY)
+    else  
+      echo -e $RED"dead"$DEF
+      FAIL=$(($FAIL+1))
+      FAIL_ARR+=($PROXY)
+    fi
   fi
 done
 # END OF CHECK PROXY #
@@ -121,7 +139,7 @@ if [[ $GOOD_FILE ]]
 then
   echo -n > $GOOD_FILE
   echo ${GOOD_ARR[@]} | tr " " "\n" >> $GOOD_FILE
-  echo -e $TUR"Good proxies save in $GOOD_FILE"$DEF
+  echo -e $GRN"Good proxies save in $GOOD_FILE"$DEF
 fi
 # ENF OF SAVE GOOD PROXY TO FILE #
 
@@ -134,6 +152,7 @@ then
 fi
 # END OF SAVE FAIL PROXY TO FILE #
 
-echo -e $BLUE"Good proxy: $GOOD$DEF,$RED bad proxy: $FAIL$DEF,$TUR all: $(($GOOD+$FAIL))"$DEF
+echo -e $TUR"all: $(($GOOD+$FAIL))"$DEF", "$GRN"Good proxy: $GOOD"$DEF", "$RED"bad proxy: $FAIL"$DEF
 
 exit 0
+
